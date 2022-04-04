@@ -32,6 +32,19 @@ module.exports.findUser = (req, res, next) => {
     });
 };
 
+module.exports.getUserInfo = (req, res, next) => {
+  const id = req.user._id;
+  User.findById(id)
+    .then((user) => {
+      if (!user) {
+        throw new Error('Ошибка на стороне сервера');
+      } else {
+        res.send(user);
+      }
+    })
+    .catch(next);
+};
+
 module.exports.createUser = (req, res, next) => {
   const {
     name, about, avatar, email, password,
@@ -53,23 +66,15 @@ module.exports.createUser = (req, res, next) => {
 module.exports.login = (req, res, next) => {
   const { email, password } = req.body;
 
-  User.findOne({ email })
+  return User.findUserByCredentials(email, password)
     .then((user) => {
-      if (!user) {
-        throw new AuthError('Неверные данные');
-      }
-      return bcrypt.compare(password, user.password)
-        .then((isValid) => {
-          if (!isValid) {
-            throw new AuthError('Неверные данные');
-          }
-          const token = jwt.sign({ _id: user._id }, NODE_ENV === 'production' ? JWT_SECRET : 'dev-secret', { expiresIn: '7d' });
+      // создадим токен
+      const token = jwt.sign({ _id: user._id }, NODE_ENV === 'production' ? JWT_SECRET : 'dev-secret', { expiresIn: '7d' });
 
-          res.send({ token });
-        })
-        .catch(next);
+      // вернём токен
+      res.send({ token });
     })
-    .catch(next);
+    .catch(next(new AuthError('Неверные данные')));
 };
 
 module.exports.updateProfileUser = (req, res, next) => {

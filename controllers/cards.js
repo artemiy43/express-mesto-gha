@@ -1,44 +1,51 @@
 const Card = require('../models/card');
 
-module.exports.getCards = (req, res) => {
+const ForbiddenError = require('../Errors/ForbiddenError');
+const NotFoundError = require('../Errors/NotFoundError');
+const CastError = require('../Errors/CastError');
+
+module.exports.getCards = (req, res, next) => {
   Card.find({})
     .then((cards) => res.send({ data: cards }))
-    .catch(() => res.status(500).send({ message: 'Ошибка по-умолчанию' }));
+    .catch(next);
 };
 
-module.exports.createCard = (req, res) => {
+module.exports.createCard = (req, res, next) => {
   const { name, link } = req.body;
   const id = req.user._id;
   Card.create({ name, link, owner: id })
     .then((card) => res.send({ data: card }))
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        res.status(400).send({ message: 'Переданы некорректные данные при создании карточки' });
+        next(new CastError('Переданы некорректные данные при создании карточки'));
       } else {
-        res.status(500).send({ message: 'Ошибка по-умолчанию' });
+        next();
       }
     });
 };
 
-module.exports.deleteCard = (req, res) => {
+module.exports.deleteCard = (req, res, next) => {
   Card.findByIdAndRemove(req.params.cardId)
     .then((card) => {
+      if (card.owner.toString() !== req.user._id) {
+        throw new ForbiddenError('Нет прав доступа');
+      }
       if (card === null) {
-        res.status(404).send({ message: 'Карточка не найдена' });
+        throw new NotFoundError('Карточка не найдена');
       } else {
         res.send({ data: card });
       }
     })
     .catch((err) => {
       if (err.name === 'CastError') {
-        res.status(400).send({ message: 'Невалидный id' });
+        next(new CastError('Невалидный id'));
       } else {
-        res.status(500).send({ message: 'Ошибка по-умолчанию' });
+        next();
       }
     });
 };
 
-module.exports.likeCard = (req, res) => {
+module.exports.likeCard = (req, res, next) => {
   Card.findByIdAndUpdate(
     req.params.cardId,
     { $addToSet: { likes: req.user._id } }, // добавить _id в массив, если его там нет
@@ -46,21 +53,21 @@ module.exports.likeCard = (req, res) => {
   )
     .then((card) => {
       if (card === null) {
-        res.status(404).send({ message: 'Карточка не найдена' });
+        throw new NotFoundError('Карточка не найдена');
       } else {
         res.send({ data: card });
       }
     })
     .catch((err) => {
       if (err.name === 'CastError') {
-        res.status(400).send({ message: 'Невалидный id' });
+        next(new CastError('Невалидный id'));
       } else {
-        res.status(500).send({ message: 'Ошибка по-умолчанию' });
+        next();
       }
     });
 };
 
-module.exports.dislikeCard = (req, res) => {
+module.exports.dislikeCard = (req, res, next) => {
   Card.findByIdAndUpdate(
     req.params.cardId,
     { $pull: { likes: req.user._id } }, // убрать _id из массива
@@ -68,16 +75,16 @@ module.exports.dislikeCard = (req, res) => {
   )
     .then((card) => {
       if (card === null) {
-        res.status(404).send({ message: 'Карточка не найдена' });
+        throw new NotFoundError('Карточка не найдена');
       } else {
         res.send({ data: card });
       }
     })
     .catch((err) => {
       if (err.name === 'CastError') {
-        res.status(400).send({ message: 'Невалидный id' });
+        next(new CastError('Невалидный id'));
       } else {
-        res.status(500).send({ message: 'Ошибка по-умолчанию' });
+        next();
       }
     });
 };

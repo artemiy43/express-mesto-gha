@@ -27,14 +27,6 @@ app.post('/signup', createUser);
 
 app.use(auth);
 
-// app.use((req, res, next) => {
-//   req.user = {
-//     _id: '6192592445fe79f55dc33b86',
-//   };
-
-//   next();
-// });
-
 app.use('/', require('./routes/users'));
 
 app.use('/', require('./routes/cards'));

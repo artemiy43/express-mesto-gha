@@ -1,8 +1,8 @@
 const mongoose = require('mongoose');
 
-// const bcrypt = require('bcryptjs');
+const bcrypt = require('bcryptjs');
 
-// const UnauthorizedError = require('../Errors/UnauthorizedError');
+// const AuthError = require('../Errors/AuthError');
 
 const userSchema = new mongoose.Schema({
   name: { // у пользователя есть имя — опишем требования к имени в схеме:
@@ -29,26 +29,27 @@ const userSchema = new mongoose.Schema({
   password: {
     type: String,
     required: true,
+    select: false,
   },
 });
 
-// userSchema.statics.findUserByCredentials = function findUserByCredentials(email, password) {
-//   return this.findOne({ email })
-//     .then((user) => {
-//       if (!user) {
-//         // return Promise.reject(new Error('Неправильные почта или парольь'));
-//         throw new UnauthorizedError();
-//       }
+userSchema.statics.findUserByCredentials = function findUserByCredentials(email, password) {
+  return this.findOne({ email }).select('+password')
+    .then((user) => {
+      if (!user) {
+        return Promise.reject(new Error('Неправильные почта или парольь'));
+        // throw new AuthError();
+      }
 
-//       return bcrypt.compare(password, user.password)
-//         .then((matched) => {
-//           if (!matched) {
-//             // return Promise.reject(new Error('Неправильные почта или парольmmm'));
-//             throw new UnauthorizedError();
-//           }
+      return bcrypt.compare(password, user.password)
+        .then((matched) => {
+          if (!matched) {
+            return Promise.reject(new Error('Неправильные почта или парольmmm'));
+            // throw new AuthError();
+          }
 
-//           return user;
-//         });
-//     });
-// };
+          return user;
+        });
+    });
+};
 module.exports = mongoose.model('user', userSchema);
