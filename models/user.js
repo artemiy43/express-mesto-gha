@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 
 const bcrypt = require('bcryptjs');
 
-// const AuthError = require('../Errors/AuthError');
+const AuthError = require('../Errors/AuthError');
 
 const userSchema = new mongoose.Schema({
   name: { // у пользователя есть имя — опишем требования к имени в схеме:
@@ -37,15 +37,15 @@ userSchema.statics.findUserByCredentials = function findUserByCredentials(email,
   return this.findOne({ email }).select('+password')
     .then((user) => {
       if (!user) {
-        return Promise.reject(new Error('Неправильные почта или парольь'));
-        // throw new AuthError();
+        // return Promise.reject(new Error('Неправильные почта или парольь'));
+        throw new AuthError();
       }
 
       return bcrypt.compare(password, user.password)
         .then((matched) => {
           if (!matched) {
-            return Promise.reject(new Error('Неправильные почта или парольmmm'));
-            // throw new AuthError();
+            // return Promise.reject(new Error('Неправильные почта или парольmmm'));
+            throw new AuthError();
           }
 
           return user;

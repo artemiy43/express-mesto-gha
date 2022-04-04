@@ -5,7 +5,7 @@ const User = require('../models/user');
 const ErrorConflict = require('../Errors/ErrorConflict');
 const NotFoundError = require('../Errors/NotFoundError');
 const CastError = require('../Errors/CastError');
-const AuthError = require('../Errors/AuthError');
+// const AuthError = require('../Errors/AuthError');
 
 const { NODE_ENV, JWT_SECRET } = process.env;
 module.exports.getUsers = (req, res, next) => {
@@ -59,6 +59,7 @@ module.exports.createUser = (req, res, next) => {
     .then((hash) => User.create({
       name, about, avatar, email, password: hash,
     }))
+    .then((user) => User.findOne({ _id: user._id }))
     .then((user) => res.send(user))
     .catch(next);
 };
@@ -74,7 +75,7 @@ module.exports.login = (req, res, next) => {
       // вернём токен
       res.send({ token });
     })
-    .catch(next(new AuthError('Неверные данные')));
+    .catch(next);
 };
 
 module.exports.updateProfileUser = (req, res, next) => {
