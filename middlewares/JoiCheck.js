@@ -1,7 +1,7 @@
 const { celebrate, Joi, Segments } = require('celebrate');
 const validator = require('validator');
 
-const urlExample = /(http|https):\/\/([\w.]+\/?)\S*/;
+const urlExample = /(http|https):\/\/(www\.)?[-a-zA-Z0-9@:%._\\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%._\\+~#?&//=]*)/;
 
 const createUserCheck = celebrate({
   [Segments.BODY]: Joi.object().keys({
@@ -19,7 +19,7 @@ const createUserCheck = celebrate({
       }
       return value;
     }),
-    password: Joi.string().required().min(8),
+    password: Joi.string().required(),
   }),
 });
 
@@ -31,7 +31,7 @@ const loginCheck = celebrate({
       }
       return value;
     }),
-    password: Joi.string().required().min(8),
+    password: Joi.string().required(),
   }),
 });
 

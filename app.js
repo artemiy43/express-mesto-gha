@@ -2,14 +2,13 @@ const express = require('express');
 
 const mongoose = require('mongoose');
 const { errors } = require('celebrate');
-// const validator = require('validator');
 const {
   login, createUser,
 } = require('./controllers/users');
 
 const auth = require('./middlewares/auth');
 const errorHandler = require('./middlewares/errorHandler');
-
+const NotFoundError = require('./Errors/NotFoundError');
 const { createUserCheck, loginCheck } = require('./middlewares/JoiCheck');
 
 const { PORT = 3000 } = process.env;
@@ -36,10 +35,10 @@ app.use('/', require('./routes/cards'));
 
 app.use(errors());
 
-app.use(errorHandler);
-
-app.all('*', (req, res) => {
-  res.status(404).send({ message: 'Запрашиваемый ресурс не найден' });
+app.all('*', (req, res, next) => {
+  next(new NotFoundError('Запрашиваемый ресурс не найден'));
 });
+
+app.use(errorHandler);
 
 app.listen(PORT);
