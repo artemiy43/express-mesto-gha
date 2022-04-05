@@ -1,21 +1,25 @@
 const { celebrate, Joi, Segments } = require('celebrate');
 const validator = require('validator');
 
+const urlExample = /(http|https):\/\/([\w.]+\/?)\S*/;
+
 const createUserCheck = celebrate({
   [Segments.BODY]: Joi.object().keys({
     name: Joi.string().min(2).max(30),
     about: Joi.string().min(2).max(30),
-    avatar: Joi.string(),
+    avatar: Joi.string().custom((value, helper) => {
+      if (!urlExample.test(value)) {
+        return helper.message('It is not url');
+      }
+      return value;
+    }),
     email: Joi.string().required().custom((value, helper) => {
       if (!validator.isEmail(value)) {
         return helper.message('It is not Email');
       }
       return value;
     }),
-    password: Joi.string().required().min(8).messages({
-      'any.required': 'Не указан пароль',
-      'string.min': 'Пароль слишком короткий',
-    }),
+    password: Joi.string().required().min(8),
   }),
 });
 
@@ -27,23 +31,25 @@ const loginCheck = celebrate({
       }
       return value;
     }),
-    password: Joi.string().required().min(8).messages({
-      'any.required': 'Не указан пароль',
-      'string.min': 'Пароль слишком короткий',
-    }),
+    password: Joi.string().required().min(8),
   }),
 });
 
 const updateProfileUserCheck = celebrate({
   [Segments.BODY]: Joi.object().keys({
-    Name: Joi.string().min(2).max(30),
-    About: Joi.string().min(2).max(30),
+    name: Joi.string().min(2).max(30),
+    about: Joi.string().min(2).max(30),
   }),
 });
 
 const updateAvatarUserCheck = celebrate({
   [Segments.BODY]: Joi.object().keys({
-    avatar: Joi.string(),
+    avatar: Joi.string().custom((value, helper) => {
+      if (!urlExample.test(value)) {
+        return helper.message('It is not url');
+      }
+      return value;
+    }),
   }),
 });
 
@@ -61,13 +67,13 @@ const cardIdCheck = celebrate({
 
 const createCardCheck = celebrate({
   [Segments.BODY]: Joi.object().keys({
-    name: Joi.string().required().min(2).max(30)
-      .messages({
-        'any.required': 'Не указан название карточки',
-        'string.min': 'Название слишком короткое',
-        'string.max': 'Название слишком длинное',
-      }),
-    link: Joi.string(),
+    name: Joi.string().required().min(2).max(30),
+    link: Joi.string().required().custom((value, helper) => {
+      if (!urlExample.test(value)) {
+        return helper.message('It is not url');
+      }
+      return value;
+    }),
   }),
 });
 

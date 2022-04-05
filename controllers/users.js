@@ -78,13 +78,13 @@ module.exports.login = (req, res, next) => {
 };
 
 module.exports.updateProfileUser = (req, res, next) => {
-  const { Name, About } = req.body;
+  const { name, about } = req.body;
   const id = req.user._id;
   User.findByIdAndUpdate(
     id,
     {
-      name: Name,
-      about: About,
+      name,
+      about,
     },
     {
       new: true, // обработчик then получит на вход обновлённую запись
@@ -108,11 +108,11 @@ module.exports.updateProfileUser = (req, res, next) => {
 };
 
 module.exports.updateAvatarUser = (req, res, next) => {
-  const { Avatar } = req.body;
+  const { avatar } = req.body;
   const id = req.user._id;
   User.findByIdAndUpdate(
     id,
-    { avatar: Avatar },
+    { avatar },
     {
       new: true, // обработчик then получит на вход обновлённую запись
       runValidators: true, // данные будут валидированы перед изменением
