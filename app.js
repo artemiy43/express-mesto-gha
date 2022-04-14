@@ -20,7 +20,7 @@ require('dotenv').config();
 const app = express();
 
 app.use(cors({
-  origin: 'http://mesto.artem43.student.nomoredomains.xyz',
+  origin: 'http://mesto.artem43.student.nomoredomains.xyz/',
   credentials: true,
 }));
 app.use(express.json());
